@@ -1,0 +1,20 @@
+{
+  "cardMastery:MasteryAscIndicator": {
+    "TEXT": [
+      "Mastered on Ascension: "
+    ]
+  },
+  "cardMastery:HideMasteryBtn": {
+    "TEXT": [
+      "Hide Mastery"
+    ]
+  },
+  "cardMastery:OptionsMenu": {
+    "TEXT": [
+      "Change the card background of mastered cards.",
+      "Show the shine animation on mastered cards.",
+      "Show the highest ascension the card was mastered on.",
+      "Don't modify the background of curses."
+    ]
+  }
+}
