@@ -3,16 +3,22 @@ package cardMastery.patches;
 import cardMastery.helper.Mastery;
 import com.evacipated.cardcrawl.modthespire.lib.*;
 import com.megacrit.cardcrawl.cards.AbstractCard;
+import com.megacrit.cardcrawl.cards.blue.FTL;
+import com.megacrit.cardcrawl.cards.colorless.FlashOfSteel;
+import com.megacrit.cardcrawl.cards.green.*;
+import com.megacrit.cardcrawl.cards.purple.Perseverance;
+import com.megacrit.cardcrawl.cards.red.FlameBarrier;
+import com.megacrit.cardcrawl.cards.red.ThunderClap;
 import com.megacrit.cardcrawl.core.Settings;
 import com.megacrit.cardcrawl.dungeons.AbstractDungeon;
 import com.megacrit.cardcrawl.screens.VictoryScreen;
 import com.megacrit.cardcrawl.ui.buttons.ReturnToMenuButton;
+import com.megacrit.cardcrawl.vfx.AbstractGameEffect;
 import com.megacrit.cardcrawl.vfx.cardManip.ShowCardBrieflyEffect;
 import javassist.CtBehavior;
 
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Random;
+import java.util.*;
+import java.util.stream.Collectors;
 
 public class SetMasteryPatches {
     @SpirePatch(
@@ -20,41 +26,47 @@ public class SetMasteryPatches {
             method = "update"
     )
     public static class MasteryCardsInDeck {
-        private static HashMap<String, Integer> backupMasteries;
-        @SpireInsertPatch(locator = Locator.class)
-        public static void patch() {
-            if(AbstractDungeon.actNum >= 4) {
-                Mastery.masteredCards = backupMasteries;
-                AbstractDungeon.player.masterDeck.group
-                        .forEach(c -> Mastery.master(c, AbstractDungeon.ascensionLevel));
-            }
-        }
-
         private static Random rng = new Random();
         @SpireInsertPatch(locator = ShowStatsLocator.class)
         public static void showCards() {
             if(AbstractDungeon.actNum >= 4) {
-                backupMasteries = new HashMap<>(Mastery.masteredCards);
-                HashSet<String> distinct = new HashSet<>();
-                AbstractDungeon.player.masterDeck.group.stream()
-                        .filter(c -> Mastery.willMaster(c, AbstractDungeon.ascensionLevel))
+                ArrayList<AbstractCard> cards;
+
+                AbstractDungeon.player.masterDeck.addToBottom(new Accuracy());
+                AbstractDungeon.player.masterDeck.addToBottom(new AThousandCuts());
+                AbstractDungeon.player.masterDeck.addToBottom(new FTL());
+                AbstractDungeon.player.masterDeck.addToBottom(new Burst());
+                AbstractDungeon.player.masterDeck.addToBottom(new Catalyst());
+                AbstractDungeon.player.masterDeck.addToBottom(new FlameBarrier());
+                AbstractDungeon.player.masterDeck.addToBottom(new FlashOfSteel());
+                AbstractDungeon.player.masterDeck.addToBottom(new Perseverance());
+                AbstractDungeon.player.masterDeck.addToBottom(new Backflip());
+                AbstractDungeon.player.masterDeck.addToBottom(new Backstab());
+                AbstractDungeon.player.masterDeck.addToBottom(new ThunderClap());
+
+                cards = AbstractDungeon.player.masterDeck.group.stream()
+                        .filter(c -> Mastery.master(c, AbstractDungeon.ascensionLevel))
                         .map(AbstractCard::makeStatEquivalentCopy)
-                        .forEach(c -> {
-                            if(!distinct.contains(c.cardID)) {
-                                distinct.add(c.cardID);
-                                Mastery.masteredCards.put(c.cardID, AbstractDungeon.ascensionLevel);
-                                float minX = (AbstractCard.RAW_W / 2f) * Settings.scale;
-                                float maxX = Settings.WIDTH - minX;
-                                float minY = (AbstractCard.RAW_H / 2f) * Settings.scale;
-                                float maxY = Settings.HEIGHT - minY;
+                        .collect(Collectors.toCollection(ArrayList::new));
 
-                                float x = minX + rng.nextFloat() * (maxX - minX);
-                                float y = minY + rng.nextFloat() * (maxY - minY);
-                                AbstractDungeon.topLevelEffects.add(new ShowCardBrieflyEffect(c, x, y));
-                            }
-                        });
-
-
+                float cW = AbstractCard.RAW_W * Settings.scale;
+                float cH = AbstractCard.RAW_H * Settings.scale;
+                float minX = (AbstractCard.RAW_W / 2f) * Settings.scale;
+                float minY = (AbstractCard.RAW_H / 2f) * Settings.scale;
+                float maxX = Settings.WIDTH - minX;
+                float maxY = Settings.HEIGHT - minY;
+                int maxInARow = (int) ((maxX - minX) / cW);
+                int curRow = 0;
+                int curPos = 0;
+                for(AbstractCard c : cards) {
+                    int x = (int) (minX + (curPos * cW));
+                    int y = (int) (maxY - (curRow * cH));
+                    curPos = (++curPos % maxInARow);
+                    if(curPos == 0) curRow++;
+                    AbstractGameEffect effect = new ShowCardBrieflyEffect(c, x, y);
+                    effect.duration = effect.startingDuration = 3f + curRow + (curPos * 0.25f);
+                    AbstractDungeon.topLevelEffects.add(effect);
+                }
             }
         }
 
@@ -75,6 +87,4 @@ public class SetMasteryPatches {
             }
         }
     }
-
-    //TODO: Add a nice animation to show the newly mastered cards
 }
