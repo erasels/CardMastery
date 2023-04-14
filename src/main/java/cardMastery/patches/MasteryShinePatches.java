@@ -12,11 +12,12 @@ import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.graphics.glutils.FrameBuffer;
 import com.badlogic.gdx.graphics.glutils.ShaderProgram;
 import com.badlogic.gdx.utils.BufferUtils;
-import com.evacipated.cardcrawl.modthespire.lib.*;
+import com.evacipated.cardcrawl.modthespire.lib.SpirePatch2;
+import com.evacipated.cardcrawl.modthespire.lib.SpirePrefixPatch;
+import com.evacipated.cardcrawl.modthespire.lib.SpireReturn;
 import com.megacrit.cardcrawl.cards.AbstractCard;
 import com.megacrit.cardcrawl.core.CardCrawlGame;
 import com.megacrit.cardcrawl.core.Settings;
-import javassist.CtBehavior;
 
 import java.nio.IntBuffer;
 import java.nio.charset.StandardCharsets;
@@ -93,14 +94,6 @@ public class MasteryShinePatches {
         public static void patch(AbstractCard __instance, SpriteBatch sb, boolean ___darken, Color ___renderColor) {
             if (__instance.cost <= -2 || ___darken || __instance.isLocked || !__instance.isSeen) {
                 sb.setColor(___renderColor);
-            }
-        }
-
-        private static class Locator extends SpireInsertLocator {
-            @Override
-            public int[] Locate(CtBehavior ctMethodToPatch) throws Exception {
-                Matcher methodCallMatcher = new Matcher.FieldAccessMatcher(AbstractCard.class, "color");
-                return LineFinder.findAllInOrder(ctMethodToPatch, methodCallMatcher);
             }
         }
     }
