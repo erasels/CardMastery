@@ -28,32 +28,26 @@ public class Mastery {
         return isMastered(c) && !hiddenMasteries.contains(c.cardID);
     }
 
-    public static void master(AbstractCard c, int asc) {
-        master(c.cardID, asc);
+    public static boolean master(AbstractCard c, int asc) {
+        return master(c.cardID, asc);
     }
-    public static void master(String cID, int asc) {
+    public static boolean master(String cID, int asc) {
         int rank = getRank(cID);
-        if(rank >= 0) {
-            if(asc > rank) {
-                masteredCards.put(cID, asc);
-                saveMasteries();
-            }
-        } else {
+        if (rank < 0 || asc > rank) {
             masteredCards.put(cID, NumberUtils.max(0, asc));
             saveMasteries();
+            return true;
         }
+        return false;
     }
 
     public static boolean willMaster(AbstractCard c, int asc) {
         int rank = getRank(c.cardID);
         if(rank >= 0) {
-            if(asc > rank) {
-                return true;
-            }
+            return asc > rank;
         } else {
             return true;
         }
-        return false;
     }
 
     public static void hide(AbstractCard c) {
