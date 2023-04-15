@@ -2,6 +2,7 @@ package cardMastery.patches;
 
 import basemod.ReflectionHacks;
 import basemod.patches.com.megacrit.cardcrawl.cards.AbstractCard.RenderFixSwitches;
+import basemod.patches.com.megacrit.cardcrawl.screens.SingleCardViewPopup.BackgroundFix;
 import cardMastery.CardMastery;
 import cardMastery.helper.Mastery;
 import cardMastery.helper.TextureLoader;
@@ -23,7 +24,7 @@ public class MasteryBGPatches {
         @SpireInsertPatch(locator = Locator.class, localvars = {"region"})
         public static void patch(AbstractCard __instance, SpriteBatch sb, float xPos, float yPos, Color ___renderColor, @ByRef TextureAtlas.AtlasRegion[] region) {
             if(CardMastery.shouldBG() && Mastery.shouldShowMastery(__instance)) {
-                String tex = getBgString(__instance, true);
+                String tex = getBgString(__instance, false);
                 if(tex != null) {
                     region[0] = TextureLoader.getTextureAsAtlasRegion(tex);
                 }
@@ -92,6 +93,26 @@ public class MasteryBGPatches {
         }
 
         private static class TextureLocator extends SpireInsertLocator {
+            public int[] Locate(CtBehavior ctMethodToPatch) throws CannotCompileException, PatchingException {
+                Matcher finalMatcher = new Matcher.MethodCallMatcher(SpriteBatch.class, "draw");
+                return LineFinder.findInOrder(ctMethodToPatch, finalMatcher);
+            }
+        }
+    }
+
+    @SpirePatch2(clz = BackgroundFix.BackgroundTexture.class, method = "Prefix")
+    public static class FixModdedSCVBg {
+        @SpireInsertPatch(locator = DrawLocator.class, localvars = {"bgTexture"})
+        public static void patch(@ByRef Texture[] bgTexture, AbstractCard ___card) {
+            if(CardMastery.shouldBG() && Mastery.shouldShowMastery(___card)) {
+                String tex = getBgString(___card, true);
+                if(tex != null) {
+                    bgTexture[0] = TextureLoader.getTexture(tex);
+                }
+            }
+        }
+
+        private static class DrawLocator extends SpireInsertLocator {
             public int[] Locate(CtBehavior ctMethodToPatch) throws CannotCompileException, PatchingException {
                 Matcher finalMatcher = new Matcher.MethodCallMatcher(SpriteBatch.class, "draw");
                 return LineFinder.findInOrder(ctMethodToPatch, finalMatcher);
