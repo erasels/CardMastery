@@ -8,13 +8,12 @@ import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.GL30;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
-import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.graphics.glutils.FrameBuffer;
 import com.badlogic.gdx.graphics.glutils.ShaderProgram;
 import com.badlogic.gdx.utils.BufferUtils;
 import com.evacipated.cardcrawl.modthespire.lib.SpirePatch2;
+import com.evacipated.cardcrawl.modthespire.lib.SpirePostfixPatch;
 import com.evacipated.cardcrawl.modthespire.lib.SpirePrefixPatch;
-import com.evacipated.cardcrawl.modthespire.lib.SpireReturn;
 import com.megacrit.cardcrawl.cards.AbstractCard;
 import com.megacrit.cardcrawl.core.CardCrawlGame;
 import com.megacrit.cardcrawl.core.Settings;
@@ -47,43 +46,46 @@ public class MasteryShinePatches {
             return RUNNING_ON_STEAM_DECK == 1;
         }
 
+        private static IntBuffer buf_rgb = null, buf_a = null;
+
         @SpirePrefixPatch
-        public static SpireReturn<Void> applyShader(AbstractCard __instance, SpriteBatch sb) {
+        public static void preRender(AbstractCard __instance, SpriteBatch sb) {
             if (!Settings.hideCards) {
                 if (IS_WINDOWS && !isOnSteamDeck() && CardMastery.shouldAnim() && Mastery.shouldShowMastery(__instance)) {
-                    TextureRegion t = cardToTextureRegion(__instance, sb);
+                    sb.end();
+                    ImageHelper.beginBuffer(fbo);
+                    sb.begin();
+                    buf_rgb = BufferUtils.newIntBuffer(16);
+                    buf_a = BufferUtils.newIntBuffer(16);
+                    Gdx.gl.glGetIntegerv(GL30.GL_BLEND_EQUATION_RGB, buf_rgb);
+                    Gdx.gl.glGetIntegerv(GL30.GL_BLEND_EQUATION_ALPHA, buf_a);
+
+                    Gdx.gl.glBlendEquationSeparate(buf_rgb.get(0), GL30.GL_MAX);
+                    Gdx.gl.glBlendEquationSeparate(GL30.GL_FUNC_ADD, GL30.GL_MAX);
+                }
+            }
+        }
+
+        @SpirePostfixPatch
+        public static void postRender(AbstractCard __instance, SpriteBatch sb) {
+            if (!Settings.hideCards) {
+                if (IS_WINDOWS && !isOnSteamDeck() && CardMastery.shouldAnim() && Mastery.shouldShowMastery(__instance)) {
+                    Gdx.gl.glBlendEquationSeparate(GL30.GL_FUNC_ADD, GL30.GL_FUNC_ADD);
+                    Gdx.gl.glBlendEquationSeparate(buf_rgb.get(0), buf_a.get(0));
+
+                    sb.end();
+                    fbo.end();
+                    sb.begin();
+
                     sb.setBlendFunction(GL20.GL_ONE, GL20.GL_ONE_MINUS_SRC_ALPHA);
                     ShaderProgram oldShader = sb.getShader();
                     sb.setShader(SHINE_SHADER);
                     SHINE_SHADER.setUniformf("x_time", CardMastery.time);
-                    sb.draw(t, -Settings.VERT_LETTERBOX_AMT, -Settings.HORIZ_LETTERBOX_AMT);
+                    sb.draw(ImageHelper.getBufferTexture(fbo), -Settings.VERT_LETTERBOX_AMT, -Settings.HORIZ_LETTERBOX_AMT);
                     sb.setBlendFunction(GL20.GL_SRC_ALPHA, GL20.GL_ONE_MINUS_SRC_ALPHA);
                     sb.setShader(oldShader);
-                    return SpireReturn.Return();
                 }
             }
-            return SpireReturn.Continue();
-        }
-
-        public static TextureRegion cardToTextureRegion(AbstractCard card, SpriteBatch sb) {
-            sb.end();
-            ImageHelper.beginBuffer(fbo);
-            sb.begin();
-            IntBuffer buf_rgb = BufferUtils.newIntBuffer(16);
-            IntBuffer buf_a = BufferUtils.newIntBuffer(16);
-            Gdx.gl.glGetIntegerv(GL30.GL_BLEND_EQUATION_RGB, buf_rgb);
-            Gdx.gl.glGetIntegerv(GL30.GL_BLEND_EQUATION_ALPHA, buf_a);
-
-            Gdx.gl.glBlendEquationSeparate(buf_rgb.get(0), GL30.GL_MAX);
-            Gdx.gl.glBlendEquationSeparate(GL30.GL_FUNC_ADD, GL30.GL_MAX);
-            card.render(sb, false);
-            Gdx.gl.glBlendEquationSeparate(GL30.GL_FUNC_ADD, GL30.GL_FUNC_ADD);
-            Gdx.gl.glBlendEquationSeparate(buf_rgb.get(0), buf_a.get(0));
-
-            sb.end();
-            fbo.end();
-            sb.begin();
-            return ImageHelper.getBufferTexture(fbo);
         }
     }
 
