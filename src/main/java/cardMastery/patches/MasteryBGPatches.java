@@ -122,16 +122,27 @@ public class MasteryBGPatches {
 
     public static String getBgString(AbstractCard c, boolean bigBG) {
         String dir = bigBG? "big" : "small";
+        String color = "";
+        if(CardMastery.shouldColor())
+            switch(c.color) {
+                case RED:
+                case GREEN:
+                case BLUE:
+                case PURPLE:
+                case CURSE:
+                case COLORLESS:
+                    color = c.color.name().toLowerCase() + "/";
+            }
         switch (c.type) {
             case POWER:
             case ATTACK:
             case SKILL:
-                return CardMastery.makeImagePath("/card/"+dir+"/" + c.type.name().toLowerCase() + ".png");
+                return CardMastery.makeImagePath("/card/"+dir+"/"+color + c.type.name().toLowerCase() + ".png");
             case CURSE:
                 if (CardMastery.shouldSkipCurses())
                     return null;
             default:
-                return CardMastery.makeImagePath("/card/"+dir+"/skill.png");
+                return CardMastery.makeImagePath("/card/"+dir+"/"+color+"skill.png");
         }
     }
 }
