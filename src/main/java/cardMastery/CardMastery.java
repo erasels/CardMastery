@@ -45,6 +45,7 @@ public class CardMastery implements
             defaults.put("Animation", Boolean.toString(true));
             defaults.put("AscIndicator", Boolean.toString(true));
             defaults.put("SkipCurses", Boolean.toString(true));
+            defaults.put("TwoCopies", Boolean.toString(false));
             defaults.put("MasteredCards", "");
             defaults.put("HiddenMasteries", "");
             modConfig = new SpireConfig("cardMastery", "Config", defaults);
@@ -79,6 +80,13 @@ public class CardMastery implements
             return false;
         }
         return modConfig.getBool("SkipCurses");
+    }
+
+    public static boolean requiresTwo() {
+        if (modConfig == null) {
+            return false;
+        }
+        return modConfig.getBool("TwoCopies");
     }
 
     public static void saveMasteries(String s) {
@@ -182,6 +190,21 @@ public class CardMastery implements
                     }
                 });
         settingsPanel.addUIElement(SCBtn);
+
+        ModLabeledToggleButton TCBtn = new ModLabeledToggleButton(TEXT[4], 350, 500, Settings.CREAM_COLOR, FontHelper.charDescFont, requiresTwo(), settingsPanel, l -> {
+        },
+                button ->
+                {
+                    if (modConfig != null) {
+                        modConfig.setBool("TwoCopies", button.enabled);
+                        try {
+                            modConfig.save();
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                });
+        settingsPanel.addUIElement(TCBtn);
 
         ConsoleCommand.addCommand("mastercard", MasterCommand.class);
         ConsoleCommand.addCommand("unmastercard", UnMasterCommand.class);

@@ -14,7 +14,8 @@
       "Change the card background of mastered cards.",
       "Show the shine animation on mastered cards.",
       "Show the highest ascension the card was mastered on.",
-      "Don't modify the background of curses."
+      "Don't modify the background of curses.",
+      "Require 2 copies for mastery of a card."
     ]
   }
 }
