@@ -16,6 +16,7 @@
       "Show the highest ascension the card was mastered on.",
       "Don't modify the background of curses.",
       "Change the color of the velvet on mastered cards to match card color for base colors."
+      "Require 2 copies for mastery of a card."
     ]
   }
 }
