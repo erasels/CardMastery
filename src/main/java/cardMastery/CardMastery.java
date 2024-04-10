@@ -45,7 +45,7 @@ public class CardMastery implements
             defaults.put("Animation", Boolean.toString(true));
             defaults.put("AscIndicator", Boolean.toString(true));
             defaults.put("SkipCurses", Boolean.toString(true));
-            defaults.put("ColoredVelvet", Boolean.toString(false));
+            defaults.put("ColoredVelvet", Boolean.toString(true));
             defaults.put("TwoCopies", Boolean.toString(false));
             defaults.put("MasteredCards", "");
             defaults.put("HiddenMasteries", "");
