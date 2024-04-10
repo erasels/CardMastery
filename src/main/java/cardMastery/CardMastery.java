@@ -45,6 +45,7 @@ public class CardMastery implements
             defaults.put("Animation", Boolean.toString(true));
             defaults.put("AscIndicator", Boolean.toString(true));
             defaults.put("SkipCurses", Boolean.toString(true));
+            defaults.put("ColoredVelvet", Boolean.toString(false));
             defaults.put("TwoCopies", Boolean.toString(false));
             defaults.put("MasteredCards", "");
             defaults.put("HiddenMasteries", "");
@@ -118,6 +119,15 @@ public class CardMastery implements
         }
         return modConfig.getString("MasteredCards");
     }
+
+    public static boolean shouldColor() {
+        if (modConfig == null) {
+            return false;
+        }
+        return modConfig.getBool("ColoredVelvet");
+    }
+
+
     public static String loadHiddenMasteries() {
         if (modConfig == null) {
             return "";
@@ -191,6 +201,22 @@ public class CardMastery implements
                 });
         settingsPanel.addUIElement(SCBtn);
 
+
+        ModLabeledToggleButton VCBtn = new ModLabeledToggleButton(TEXT[4], 350, 500, Settings.CREAM_COLOR, FontHelper.charDescFont, shouldColor(), settingsPanel, l -> {
+        },
+                button ->
+                {
+                    if (modConfig != null) {
+                        modConfig.setBool("ColoredVelvet", button.enabled);
+                        try {
+                            modConfig.save();
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                });
+        settingsPanel.addUIElement(VCBtn);
+  
         ModLabeledToggleButton TCBtn = new ModLabeledToggleButton(TEXT[4], 350, 500, Settings.CREAM_COLOR, FontHelper.charDescFont, requiresTwo(), settingsPanel, l -> {
         },
                 button ->
