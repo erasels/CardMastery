@@ -217,7 +217,7 @@ public class CardMastery implements
                 });
         settingsPanel.addUIElement(VCBtn);
   
-        ModLabeledToggleButton TCBtn = new ModLabeledToggleButton(TEXT[4], 350, 500, Settings.CREAM_COLOR, FontHelper.charDescFont, requiresTwo(), settingsPanel, l -> {
+        ModLabeledToggleButton TCBtn = new ModLabeledToggleButton(TEXT[5], 350, 450, Settings.CREAM_COLOR, FontHelper.charDescFont, requiresTwo(), settingsPanel, l -> {
         },
                 button ->
                 {
