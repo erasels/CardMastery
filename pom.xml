@@ -7,7 +7,7 @@
     <groupId>UpdateBodyText</groupId>
     <artifactId>cardMastery</artifactId>
     <name>Card Mastery</name>
-    <version>1.1.0</version>
+    <version>1.1.1</version>
     <description>Unlocks a special card frame for cards you beat the heart with on any ascension.</description>
 
     <properties>
